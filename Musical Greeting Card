@@ -1,0 +1,120 @@
+#define F_CPU 1000000//for making system compatible with ms
+#define Time 1000
+#define delay 10
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <avr/io.h>
+#include <util/delay.h>
+
+/*
+ * 
+ */
+
+int s1() {// function to return 1 when button is pressed
+
+    int x;
+    x = !(PINB & (1 << PORTB1));
+    return (x);
+};
+
+void counteroff() {// function to turn CTC off
+    TCCR0A = 0x00;
+    TCCR0B = 0X00;
+    TCCR1A = 0X00;
+    TCCR1B = 0X00;
+}
+
+void counteron() {// function to turn timer CTC mode on
+    TCCR0A = 0X42;
+    TCCR0B = 0X02;
+    TCCR1A = 0X40;
+    TCCR1B = 0X0A;
+}
+
+int main(void) {
+    
+    DDRB &= ~(1 << DDB1);
+    DDRB |= (1 << DDB2);
+    DDRB |= (1 << DDB3);
+    PORTB |= (1 << PORTB1);
+    PORTB &= ~(1 << PORTB2);
+    PORTB &= ~(1 << PORTB3);
+    
+    TCCR0A = 0X42;// to turn the timer on
+    TCCR0B = 0X02;
+    TCCR1A = 0X40;// to turn the another timer on
+    TCCR1B = 0X0A;
+    
+    int count = 0;// variable to count the number of times melody played
+    //values obtained for desired frequency of two voices, in order to get 
+    //different tune change the value in the array
+    int OCOAVoice1[] = {189,212,238};// voice 1 value
+    int OC1AVoice2[] = {94,106,118};//voice 2 value
+
+    while (s1() == 0) {// stops code until button pressed
+
+    }
+
+    while (1) {
+        
+        if (s1() == 0 ) {// reset condition
+
+            OCR0A = OCOAVoice1[0];//here two voices are played simultaneously
+            OCR1A = OC1AVoice2[0];
+            _delay_ms(Time);
+            counteroff();
+            _delay_ms(delay);
+            counteron();
+            
+            OCR0A = OCOAVoice1[1];
+            OCR1A = OC1AVoice2[1];
+            _delay_ms(Time);
+            counteroff();
+            _delay_ms(delay);
+            counteron();
+            
+            OCR0A = OCOAVoice1[2];
+            OCR1A = OC1AVoice2[2];
+            _delay_ms(Time);
+            counteroff();
+            _delay_ms(delay);
+            counteron();
+            
+            OCR0A = OCOAVoice1[1];
+            OCR1A = OC1AVoice2[1];
+            _delay_ms(Time);
+            counteroff();
+            _delay_ms(delay);
+            counteron();
+            
+            OCR0A = OCOAVoice1[0];
+            OCR1A = OC1AVoice2[0];
+            _delay_ms(Time);
+            counteroff();
+            _delay_ms(delay);
+            counteron();
+            
+            OCR0A = OCOAVoice1[2];
+            OCR1A = OC1AVoice2[2];
+            _delay_ms(Time);
+            counteroff();
+            _delay_ms(delay);
+            counteron();
+            
+            count = count + 1;
+            
+            if (count == 3) {// melody played 3 times
+                count = 0;
+                counteroff();
+                
+                while (s1() == 0) {// to play the melody again(reset)
+
+                }
+                
+                counteron();
+                
+            }
+        }
+    }
+}
